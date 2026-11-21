@@ -5632,7 +5632,7 @@ function updateSchoolPopulation(dt) {
       actor.elapsed+=dt;
       if(actor.elapsed>=(actor.id===10?.9:.7)) {
         actor.previous=[actor.a,actor.b];actor.a=actor.step.a;actor.b=actor.step.b;
-        actor.step=null;actor.elapsed=0;actor.wait=.12;
+        actor.step=null;actor.elapsed=0;actor.wait=actor.id===10 ? 0 : .12;
       }
       continue;
     }
