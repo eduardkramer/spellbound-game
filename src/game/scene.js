@@ -5618,7 +5618,7 @@ function initSchoolRoom(room) {
   }
   if(room==='hall') {pair(0,[1,5]);place(2,[0,8],'window',-1);}
   if(room==='hallEnd') {pair(3,[1,3]);pair(5,[1,10]);}
-  if(room==='classroom') {pair(7,[5,9]);place(9,[6,5],'walk');place(10,[4,2],'walk');}
+  if(room==='classroom') {pair(7,[5,9]);place(10,[4,2],'walk');}
   if(room==='potion') place(11,[Math.floor(cauldronA/TILE_SIZE),Math.floor(cauldronB/TILE_SIZE)-2],'stand');
 }
 function updateSchoolPopulation(dt) {
