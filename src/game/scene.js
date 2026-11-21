@@ -5616,7 +5616,7 @@ function initSchoolRoom(room) {
     const [a,b]=candidates[0] || anchor;
     place(first,[a,b],'talk',1);place(first+1,[a+2,b],'talk',-1);
   }
-  if(room==='hall') {place(0,[1,3],'walk');place(1,[2,7],'walk');place(2,[1,10],'walk');}
+  if(room==='hall') {pair(0,[1,5]);place(2,[0,8],'window',-1);}
   if(room==='hallEnd') {pair(3,[1,3]);pair(5,[1,10]);}
   if(room==='classroom') {pair(7,[5,9]);place(9,[6,5],'walk');place(10,[4,2],'walk');}
   if(room==='potion') place(11,[Math.floor(cauldronA/TILE_SIZE),Math.floor(cauldronB/TILE_SIZE)-2],'stand');
