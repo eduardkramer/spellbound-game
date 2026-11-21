@@ -4223,6 +4223,13 @@ function drawDialogueIndicators(t) {
     const [sx,sy]=P((student.a+.5)*TILE_SIZE,(student.b+.5)*TILE_SIZE,48);
     drawDialogueBubble(sx,sy-5,t);
   }
+  if(currentRoom===rooms.classroom && librarianDialogue.hidden) {
+    const teacher=schoolActors.find(actor=>actor.id===10 && actor.room==='classroom');
+    if(teacher) {
+      const [x,y]=P((teacher.a+.5)*TILE_SIZE,(teacher.b+.5)*TILE_SIZE,48);
+      drawDialogueBubble(x+6,y-5,t);
+    }
+  }
   if (currentRoom === rooms.potion && !questDialogue?.open && skeletonMage.naturalWidth) {
     const [x, y] = P(skeletonMageA, skeletonMageB, skeletonMage.naturalHeight);
     drawDialogueBubble(x + 19, y - 5, t);
@@ -4662,6 +4669,15 @@ if (!preview) {
       if (Math.abs(px + CX - x) <= 15 && py + CY >= y - (inStockroom ? 13 : 10) && py + CY <= y + 12) {
         requestChest();
         return;
+      }
+    }
+    if(currentRoom===rooms.classroom) {
+      const teacher=schoolActors.find(actor=>actor.id===10 && actor.room==='classroom');
+      if(teacher) {
+        const [tx,ty]=P((teacher.a+.5)*TILE_SIZE,(teacher.b+.5)*TILE_SIZE,0);
+        if(Math.abs(px+CX-tx)<=16 && py+CY>=ty-55 && py+CY<=ty) {
+          talkToRuneTeacher();return;
+        }
       }
     }
     if(currentRoom===rooms.library && libraryStudents[0]) {
@@ -5175,11 +5191,32 @@ function talkToLibraryStudent() {
   else showLibrarianConversation('greeting');
 }
 
+const runeTeacherConversations = {
+  greeting: {text: "Quietly, apprentice. A rune appeared on the board overnight. I erased it three times. Each time, it returned one stroke closer to being complete.", choices: [["What does the rune mean?", 'rune'], ["Can you teach me?", 'lesson'], ["Tell me about yourself.", 'teacher'], ["What happens when it is complete?", 'warning']]},
+  rune: {text: "It is a threshold rune. Usually, it marks a doorway. But this one is listening. When the room falls silent, its final stroke begins to glow.", choices: [["A doorway to where?", 'door'], ["How do we stop it?", 'protect'], ["Ask something else.", 'greeting']]},
+  door: {text: "The oldest school plans show a staircase beneath this classroom. No builder remembers sealing it. Last night, I heard footsteps climbing from below.", choices: [["Did anyone come through?", 'visitor'], ["Ask something else.", 'greeting']]},
+  visitor: {text: "Nobody I could see. But the dust on my desk held a handprint this morning. Small fingers. And six of them. Keep that between us for now.", choices: [["How can I stay safe?", 'protect'], ["Ask something else.", 'greeting']]},
+  lesson: {text: "Begin with the warding rune: a closed diamond, then a single line through its heart. Every stroke needs intent. Never copy a symbol merely because it looks beautiful.", choices: [["What if I make a mistake?", 'mistake'], ["Why a closed diamond?", 'protect'], ["Ask something else.", 'greeting']]},
+  mistake: {text: "Put down your wand and break the circle with ordinary chalk. Do not try a stronger spell. I once turned an examination table into a very opinionated raven that way.", choices: [["Is the raven still here?", 'raven'], ["Ask something else.", 'greeting']]},
+  raven: {text: "It visits during examinations. It remembers every answer I ever wrote upon it, and enjoys correcting me. Even a professor must learn humility.", choices: [["Tell me about yourself.", 'teacher'], ["Ask something else.", 'greeting']]},
+  protect: {text: "A closed shape holds a boundary. An open stroke invites something across it. Until I understand this rune, leave unfamiliar markings untouched, especially near doorways.", choices: [["What happens when it is complete?", 'warning'], ["Ask something else.", 'greeting']]},
+  teacher: {text: "Professor Elowen Vale. I have taught runes here for forty years. I used to explore forgotten sanctuaries. Teaching seemed safer, until the sanctuaries began sending messages back.", choices: [["What brought you back to teaching?", 'past'], ["Ask something else.", 'greeting']]},
+  past: {text: "A pupil once followed me into a ruin. I brought her home, but her shadow stayed behind. Since then, I teach the warnings before I teach the wonders.", choices: [["Did her shadow return?", 'shadow'], ["Ask something else.", 'greeting']]},
+  shadow: {text: "Eventually. One winter evening it knocked on her bedroom door. That is why I always count the shadows when my pupils leave a room.", choices: [["Ask something else.", 'greeting']]},
+  warning: {text: "Something on the other side will know we can hear it. I will watch the board. You watch the corridors. If your shadow moves before you do, find me at once.", choices: [["How can I stay safe?", 'protect'], ["Ask something else.", 'greeting']]}
+};
+function talkToRuneTeacher() {
+  libraryDialogueSpeaker='runeTeacher';
+  clearRoute();heldKeys.clear();requestedSeat=null;fireHeld=false;waterHeld=false;
+  if(librarianDialogue.hidden) librarianDialogue.hidden=false;
+  else showLibrarianConversation('greeting');
+}
+
 function showLibrarianConversation(key) {
-  const student=libraryDialogueSpeaker==='student';
-  const conversation = (student ? studentConversations : librarianConversations)[key];
-  document.getElementById('librarian-name').textContent=student ? 'Mira · Apprentice' : 'Librarian';
-  document.getElementById('librarian-portrait').style.backgroundImage=student ? 'url("assets/sprites/student-mira-portrait.png")' : '';
+  const student=libraryDialogueSpeaker==='student', teacher=libraryDialogueSpeaker==='runeTeacher';
+  const conversation = (teacher ? runeTeacherConversations : student ? studentConversations : librarianConversations)[key];
+  document.getElementById('librarian-name').textContent=teacher ? 'Professor Vale' : student ? 'Mira · Apprentice' : 'Librarian';
+  document.getElementById('librarian-portrait').style.backgroundImage=teacher ? 'url("assets/sprites/rune-teacher-portrait.png")' : student ? 'url("assets/sprites/student-mira-portrait.png")' : '';
   const message = librarianDialogue.querySelector('.npc-dialogue-copy p');
   const topics = document.getElementById('librarian-topics');
   document.getElementById('close-librarian-dialogue').hidden = false;
@@ -5209,7 +5246,7 @@ if (!preview) {
   document.getElementById('close-librarian-dialogue').addEventListener('click', () => {
     document.getElementById('librarian-topics').replaceChildren();
     document.getElementById('close-librarian-dialogue').hidden = true;
-    typeDialogue(librarianMessage, libraryDialogueSpeaker==='student' ? 'Good luck exploring! If you spot that atlas, tell it I’m still waiting.' : 'Walk carefully, apprentice. And if a book whispers your name... let it finish before you answer.',
+    typeDialogue(librarianMessage, libraryDialogueSpeaker==='runeTeacher' ? 'Go carefully, apprentice. Trust your eyes, but count your shadows. I will be here if you need me.' : libraryDialogueSpeaker==='student' ? 'Good luck exploring! If you spot that atlas, tell it I’m still waiting.' : 'Walk carefully, apprentice. And if a book whispers your name... let it finish before you answer.',
       librarianDialogue, () => { librarianDialogue.hidden = true; });
   });
   addEventListener('keydown', event => {
