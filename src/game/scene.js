@@ -4223,6 +4223,13 @@ function drawDialogueIndicators(t) {
     const [sx,sy]=P((student.a+.5)*TILE_SIZE,(student.b+.5)*TILE_SIZE,48);
     drawDialogueBubble(sx,sy-5,t);
   }
+  if(currentRoom===rooms.classroom && librarianDialogue.hidden) {
+    const teacher=schoolActors.find(actor=>actor.id===10 && actor.room==='classroom');
+    if(teacher) {
+      const [x,y]=P((teacher.a+.5)*TILE_SIZE,(teacher.b+.5)*TILE_SIZE,48);
+      drawDialogueBubble(x+6,y-5,t);
+    }
+  }
   if (currentRoom === rooms.potion && !questDialogue?.open && skeletonMage.naturalWidth) {
     const [x, y] = P(skeletonMageA, skeletonMageB, skeletonMage.naturalHeight);
     drawDialogueBubble(x + 19, y - 5, t);
@@ -4662,6 +4669,15 @@ if (!preview) {
       if (Math.abs(px + CX - x) <= 15 && py + CY >= y - (inStockroom ? 13 : 10) && py + CY <= y + 12) {
         requestChest();
         return;
+      }
+    }
+    if(currentRoom===rooms.classroom) {
+      const teacher=schoolActors.find(actor=>actor.id===10 && actor.room==='classroom');
+      if(teacher) {
+        const [tx,ty]=P((teacher.a+.5)*TILE_SIZE,(teacher.b+.5)*TILE_SIZE,0);
+        if(Math.abs(px+CX-tx)<=16 && py+CY>=ty-55 && py+CY<=ty) {
+          talkToRuneTeacher();return;
+        }
       }
     }
     if(currentRoom===rooms.library && libraryStudents[0]) {
@@ -5175,11 +5191,32 @@ function talkToLibraryStudent() {
   else showLibrarianConversation('greeting');
 }
 
+const runeTeacherConversations = {
+  greeting: {text: "Quietly, apprentice. A rune appeared on the board overnight. I erased it three times. Each time, it returned one stroke closer to being complete.", choices: [["What does the rune mean?", 'rune'], ["Can you teach me?", 'lesson'], ["Tell me about yourself.", 'teacher'], ["What happens when it is complete?", 'warning']]},
+  rune: {text: "It is a threshold rune. Usually, it marks a doorway. But this one is listening. When the room falls silent, its final stroke begins to glow.", choices: [["A doorway to where?", 'door'], ["How do we stop it?", 'protect'], ["Ask something else.", 'greeting']]},
+  door: {text: "The oldest school plans show a staircase beneath this classroom. No builder remembers sealing it. Last night, I heard footsteps climbing from below.", choices: [["Did anyone come through?", 'visitor'], ["Ask something else.", 'greeting']]},
+  visitor: {text: "Nobody I could see. But the dust on my desk held a handprint this morning. Small fingers. And six of them. Keep that between us for now.", choices: [["How can I stay safe?", 'protect'], ["Ask something else.", 'greeting']]},
+  lesson: {text: "Begin with the warding rune: a closed diamond, then a single line through its heart. Every stroke needs intent. Never copy a symbol merely because it looks beautiful.", choices: [["What if I make a mistake?", 'mistake'], ["Why a closed diamond?", 'protect'], ["Ask something else.", 'greeting']]},
+  mistake: {text: "Put down your wand and break the circle with ordinary chalk. Do not try a stronger spell. I once turned an examination table into a very opinionated raven that way.", choices: [["Is the raven still here?", 'raven'], ["Ask something else.", 'greeting']]},
+  raven: {text: "It visits during examinations. It remembers every answer I ever wrote upon it, and enjoys correcting me. Even a professor must learn humility.", choices: [["Tell me about yourself.", 'teacher'], ["Ask something else.", 'greeting']]},
+  protect: {text: "A closed shape holds a boundary. An open stroke invites something across it. Until I understand this rune, leave unfamiliar markings untouched, especially near doorways.", choices: [["What happens when it is complete?", 'warning'], ["Ask something else.", 'greeting']]},
+  teacher: {text: "Professor Elowen Vale. I have taught runes here for forty years. I used to explore forgotten sanctuaries. Teaching seemed safer, until the sanctuaries began sending messages back.", choices: [["What brought you back to teaching?", 'past'], ["Ask something else.", 'greeting']]},
+  past: {text: "A pupil once followed me into a ruin. I brought her home, but her shadow stayed behind. Since then, I teach the warnings before I teach the wonders.", choices: [["Did her shadow return?", 'shadow'], ["Ask something else.", 'greeting']]},
+  shadow: {text: "Eventually. One winter evening it knocked on her bedroom door. That is why I always count the shadows when my pupils leave a room.", choices: [["Ask something else.", 'greeting']]},
+  warning: {text: "Something on the other side will know we can hear it. I will watch the board. You watch the corridors. If your shadow moves before you do, find me at once.", choices: [["How can I stay safe?", 'protect'], ["Ask something else.", 'greeting']]}
+};
+function talkToRuneTeacher() {
+  libraryDialogueSpeaker='runeTeacher';
+  clearRoute();heldKeys.clear();requestedSeat=null;fireHeld=false;waterHeld=false;
+  if(librarianDialogue.hidden) librarianDialogue.hidden=false;
+  else showLibrarianConversation('greeting');
+}
+
 function showLibrarianConversation(key) {
-  const student=libraryDialogueSpeaker==='student';
-  const conversation = (student ? studentConversations : librarianConversations)[key];
-  document.getElementById('librarian-name').textContent=student ? 'Mira · Apprentice' : 'Librarian';
-  document.getElementById('librarian-portrait').style.backgroundImage=student ? 'url("assets/sprites/student-mira-portrait.png")' : '';
+  const student=libraryDialogueSpeaker==='student', teacher=libraryDialogueSpeaker==='runeTeacher';
+  const conversation = (teacher ? runeTeacherConversations : student ? studentConversations : librarianConversations)[key];
+  document.getElementById('librarian-name').textContent=teacher ? 'Professor Vale' : student ? 'Mira · Apprentice' : 'Librarian';
+  document.getElementById('librarian-portrait').style.backgroundImage=teacher ? 'url("assets/sprites/rune-teacher-portrait.png")' : student ? 'url("assets/sprites/student-mira-portrait.png")' : '';
   const message = librarianDialogue.querySelector('.npc-dialogue-copy p');
   const topics = document.getElementById('librarian-topics');
   document.getElementById('close-librarian-dialogue').hidden = false;
@@ -5209,7 +5246,7 @@ if (!preview) {
   document.getElementById('close-librarian-dialogue').addEventListener('click', () => {
     document.getElementById('librarian-topics').replaceChildren();
     document.getElementById('close-librarian-dialogue').hidden = true;
-    typeDialogue(librarianMessage, libraryDialogueSpeaker==='student' ? 'Good luck exploring! If you spot that atlas, tell it I’m still waiting.' : 'Walk carefully, apprentice. And if a book whispers your name... let it finish before you answer.',
+    typeDialogue(librarianMessage, libraryDialogueSpeaker==='runeTeacher' ? 'Go carefully, apprentice. Trust your eyes, but count your shadows. I will be here if you need me.' : libraryDialogueSpeaker==='student' ? 'Good luck exploring! If you spot that atlas, tell it I’m still waiting.' : 'Walk carefully, apprentice. And if a book whispers your name... let it finish before you answer.',
       librarianDialogue, () => { librarianDialogue.hidden = true; });
   });
   addEventListener('keydown', event => {
@@ -5585,6 +5622,88 @@ function libraryStudentLayers(t) {
   });
 }
 
+// Additional school population: ten students and two subject teachers.
+const schoolSprite = new Image();
+schoolSprite.src = 'assets/sprites/school-population.png';
+const schoolActors = [];
+const populatedSchoolRooms = new Set();
+function schoolTileFree(room,a,b) {
+  const floor=rooms[room].floor;
+  return floor[b]?.[a]==='.' && !rooms[room].exits.some(exit=>
+    Math.abs(exit.tile[0]-a)+Math.abs(exit.tile[1]-b)<2);
+}
+function initSchoolRoom(room) {
+  if(populatedSchoolRooms.has(room)) return;
+  populatedSchoolRooms.add(room);
+  function place(id,anchor,role,face=1) {
+    const free=[];
+    const floor=rooms[room].floor;
+    for(let b=0;b<floor.length;b++) for(let a=0;a<floor[b].length;a++)
+      if(schoolTileFree(room,a,b) && !schoolActors.some(n=>n.room===room && n.a===a && n.b===b)) free.push([a,b]);
+    free.sort((l,r)=>Math.abs(l[0]-anchor[0])+Math.abs(l[1]-anchor[1])-Math.abs(r[0]-anchor[0])-Math.abs(r[1]-anchor[1]));
+    if(!free.length)return;
+    const [a,b]=free[0];schoolActors.push({id,room,a,b,role,face,step:null,elapsed:0,wait:1+id*.23,turn:0,previous:null});
+  }
+  function pair(first,anchor) {
+    const floor=rooms[room].floor,candidates=[];
+    for(let b=1;b<floor.length-1;b++) for(let a=0;a<floor[b].length-2;a++) {
+      if([a,a+1,a+2].every(x=>schoolTileFree(room,x,b) && !schoolActors.some(n=>n.room===room&&n.a===x&&n.b===b))) candidates.push([a,b]);
+    }
+    candidates.sort((l,r)=>Math.abs(l[0]-anchor[0])+Math.abs(l[1]-anchor[1])-Math.abs(r[0]-anchor[0])-Math.abs(r[1]-anchor[1]));
+    const [a,b]=candidates[0] || anchor;
+    place(first,[a,b],'talk',1);place(first+1,[a+2,b],'talk',-1);
+  }
+  if(room==='hall') {pair(0,[1,5]);place(2,[0,8],'window',-1);}
+  if(room==='hallEnd') {pair(3,[1,3]);pair(5,[1,10]);}
+  if(room==='classroom') {pair(7,[5,9]);place(10,[4,0],'stand',1);}
+  if(room==='potion') place(11,[Math.floor(cauldronA/TILE_SIZE),Math.floor(cauldronB/TILE_SIZE)-2],'stand');
+}
+function updateSchoolPopulation(dt) {
+  if(preview)return;
+  const room=Object.keys(rooms).find(key=>rooms[key]===currentRoom);
+  if(!['hall','hallEnd','classroom','potion'].includes(room))return;
+  initSchoolRoom(room);
+  if(chestInventory?.open || questDialogue?.open || !librarianDialogue.hidden || resetQuestDialogue?.open || teleportDialogue?.open)return;
+  for(const actor of schoolActors.filter(n=>n.room===room&&n.role==='walk')) {
+    if(actor.step) {
+      actor.elapsed+=dt;
+      if(actor.elapsed>=(actor.id===10?.9:.7)) {
+        actor.previous=[actor.a,actor.b];actor.a=actor.step.a;actor.b=actor.step.b;
+        actor.step=null;actor.elapsed=0;actor.wait=actor.id===10 ? 0 : .12;
+      }
+      continue;
+    }
+    actor.wait-=dt;if(actor.wait>0)continue;actor.turn++;
+    let choices=[[1,0],[0,1],[-1,0],[0,-1]].map(([da,db])=>[actor.a+da,actor.b+db]).filter(([a,b])=>
+      schoolTileFree(room,a,b) && Math.abs(a-wizard.a)+Math.abs(b-wizard.b)>1 &&
+      !(wizard.step?.a===a && wizard.step?.b===b) &&
+      !schoolActors.some(other=>other!==actor&&other.room===room&&
+        ((other.a===a&&other.b===b)||(other.step?.a===a&&other.step?.b===b))));
+    if(choices.length>1 && actor.previous) choices=choices.filter(([a,b])=>a!==actor.previous[0]||b!==actor.previous[1]);
+    if(!choices.length || actor.turn%6===0) {actor.wait=1.5+hash(actor.id,actor.turn)*2;continue;}
+    const [a,b]=choices[Math.floor(hash(actor.id+19,actor.turn)*choices.length)];
+    actor.face=Math.sign(a-actor.a-b+actor.b)||actor.face;actor.step={a,b};actor.elapsed=0;
+  }
+}
+function schoolPopulationLayers(t) {
+  if(preview)return [];
+  return schoolActors.filter(n=>rooms[n.room]===currentRoom).map(actor=>{
+    const progress=actor.step ? Math.min(1,actor.elapsed/(actor.id===10?.9:.7)) : 0;
+    const a=(actor.a+.5+(actor.step?actor.step.a-actor.a:0)*progress)*TILE_SIZE;
+    const b=(actor.b+.5+(actor.step?actor.step.b-actor.b:0)*progress)*TILE_SIZE;
+    const [x,y]=P(a,b,0);
+    return {depth:a+b,animate:()=>{
+      if(!schoolSprite.naturalWidth)return;
+      ctx.save();ctx.imageSmoothingEnabled=false;
+      ell(ctx,x,y-1,6,2,'rgba(18,20,33,.3)');
+      ctx.translate(Math.round(x),Math.round(y));ctx.scale(actor.face,1);
+      const frame=actor.step ? Math.floor(progress*4)%4 : actor.role==='talk' && Math.floor(t*.45+actor.id)%4===0 ? 3 : 1;
+      ctx.drawImage(schoolSprite,frame*32,actor.id*48,32,48,-16,-47,32,48);
+      ctx.restore();
+    }};
+  });
+}
+
 function drawRoomOccupants(t, dt) {
   const step = wizard.step;
   const progress = step ? step.elapsed / STEP_TIME : 0;
@@ -5595,7 +5714,7 @@ function drawRoomOccupants(t, dt) {
     ? [...libraryFurnishings, libraryCatLayer(t), librarianLayer(), libraryDitto, ...libraryStudentLayers(t)].sort((left, right) => left.depth - right.depth)
     : currentRoom === rooms.tower ? furnishings
       : currentRoom === rooms.potion ? potionFurnishings : currentRoom === rooms.stockroom ? stockFurnishings : [];
-  const occupants = [...roomFurnishings, ...iceBallLayers()].sort((left, right) => left.depth - right.depth);
+  const occupants = [...roomFurnishings, ...schoolPopulationLayers(t), ...iceBallLayers()].sort((left, right) => left.depth - right.depth);
   let index = 0;
   for (; index < occupants.length && occupants[index].depth <= a + b; index++) {
     drawFurnishing(occupants[index], t, dt);
@@ -5670,6 +5789,7 @@ let last = 0;
 function frame(ms) {
   const t = ms / 1000, dt = Math.min(.1, last ? t - last : .016); last = t;
   updateWizard(dt);
+  updateSchoolPopulation(dt);
   if (!preview && zoom > 100) positionCamera();
   updateWandLight(dt);
   updateStockroomHint();
