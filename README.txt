@@ -33,9 +33,11 @@ TOVENAAR (sprite)
   tiles.html: loop met pijltjestoetsen of WASD door de testkamer.
 
 Bestanden
-  index.html  landingspagina
-  game.html   speelbare torenkamer en muziekspeler
-  src/game/scene.js    de kamer (procedureel getekend, geen plaatjes)
-  src/audio/player.js   de muziekspeler
-  src/audio/tracks.js   jouw afspeellijst
-  assets/music/      hier komen je mp3's
+  index.html      landingspagina
+  game.html       speelbare torenkamer
+  tiles.html      tegeloverzicht en testkamer
+  src/game/       spelcode, dialoogindeling en quests
+  src/demo/       besturing en weergave van de testkamer
+  src/styles/     stylesheets voor de pagina’s, portretten en scrolls
+  src/audio/      muziekspeler en afspeellijst
+  assets/         lettertypen, afbeeldingen, muziek en spritesheets
