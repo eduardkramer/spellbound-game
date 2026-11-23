@@ -284,8 +284,8 @@
   #hotbar .item-icon{position:relative;width:72%;max-width:28px;height:auto;image-rendering:pixelated}
 
 </style>
-<link rel="stylesheet" href="assets/sprites/lore-scroll.css">
-<link rel="stylesheet" href="assets/sprites/npc-portraits.css">
+<link rel="stylesheet" href="assets/ui/lore-scroll.css">
+<link rel="stylesheet" href="assets/ui/npc-portraits.css">
 </head>
 <body>
 <div id="game-loading">
@@ -407,24 +407,6 @@
 <script src="src/game/quests/definitions.js"></script>
 <script src="src/game/quests/manager.js"></script>
 <script src="src/game/scene.js"></script>
-<script>
-(() => {
-  const hotbar = document.getElementById('hotbar');
-  const sceneView = document.getElementById('scene-view');
-
-  function alignDialogue() {
-    const hotbarTop = hotbar.getBoundingClientRect().top;
-    const bottom = Math.max(0, window.innerHeight - Math.max(100, hotbarTop));
-    document.documentElement.style.setProperty('--hotbar-bottom', `${bottom}px`);
-  }
-
-  const observer = new ResizeObserver(alignDialogue);
-  observer.observe(sceneView);
-  observer.observe(hotbar);
-  window.addEventListener('resize', alignDialogue);
-  window.addEventListener('scroll', alignDialogue, { passive: true });
-  alignDialogue();
-})();
-</script>
+<script src="src/boot/game-entry.js"></script>
 </body>
 </html>
