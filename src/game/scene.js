@@ -703,6 +703,7 @@ function drawReadingWindow(g) {
 
 const libraryClockCenter = 168;
 const libraryClockDepth = 2.5;
+const libraryClockFaceA = libraryClockCenter / 2;
 
 function drawLibraryClock(g) {
   const a = libraryClockCenter / 2;
@@ -731,6 +732,9 @@ function drawLibraryClock(g) {
       if (d <= 1 && z >= 23 && z <= 39) return '#b58a55';
       return z < 31 ? '#171522' : '#29202d';
     }
+    if (z >= 70 && d <= Math.max(0, 4 - Math.floor((z - 70) / 2))) {
+      return d === 0 && z >= 72 ? '#e0b66e' : '#9f673f';
+    }
     const r = Math.hypot(x, z - 53);
     if (r <= 8) {
       if (r > 7) return '#d0a56b';
@@ -749,15 +753,15 @@ function drawLibraryClock(g) {
 }
 
 function animateLibraryClock(t) {
-  const [faceX, faceY] = P(libraryClockCenter / 2, libraryClockDepth, 53);
+  const [faceX, faceY] = P(libraryClockFaceA, libraryClockDepth, 53);
   const angle = t / 45 - .85;
   line(ctx, faceX, faceY, faceX + Math.sin(angle) * 5, faceY - Math.cos(angle) * 5, '#674632');
   line(ctx, faceX, faceY, faceX + 3, faceY + 2, '#493237');
   dot(ctx, faceX, faceY, '#875c3a');
 
   const swing = Math.sin(t * 3.2) * 3.1;
-  const [pivotX, pivotY] = P(libraryClockCenter / 2, libraryClockDepth, 41);
-  const [bobX, bobY] = P((libraryClockCenter + swing) / 2, libraryClockDepth, 33);
+  const [pivotX, pivotY] = P(libraryClockFaceA, libraryClockDepth, 41);
+  const [bobX, bobY] = P(libraryClockFaceA + swing / 2, libraryClockDepth, 33);
   line(ctx, pivotX, pivotY, bobX, bobY, '#b78b55');
   ell(ctx, bobX, bobY, 3, 2, '#d8ae6e');
   dot(ctx, bobX - 1, bobY - 1, '#f3d29b');
@@ -3878,7 +3882,7 @@ function typeDialogue(element, text, panel, onComplete) {
   const controls = [...copy.children].filter(child => child !== element && child.tagName !== 'H2');
   const saved = controls.map(child => [child, child.hidden]);
   const next = document.createElement('button');
-  next.type = 'button'; next.className = 'dialogue-page-next'; next.textContent = 'Next';
+  next.type = 'button'; next.className = 'dialogue-page-next'; next.textContent = 'Continue';
   copy.append(next);
   let remaining = text, currentStop;
   const restore = () => { for (const [child, hidden] of saved) child.hidden = hidden; };
@@ -3945,7 +3949,7 @@ function typeDialoguePage(element, text, panel, onComplete, onFinish) {
       return;
     }
     element.textContent += characters[position++];
-    timer = setTimeout(tick, /[.!?]/.test(characters[position - 1]) ? 240 : 32);
+    timer = setTimeout(tick, /[.!?]/.test(characters[position - 1]) ? 90 : 14);
   };
   timer = setTimeout(tick, 32);
 }

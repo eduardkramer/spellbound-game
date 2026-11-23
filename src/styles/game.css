@@ -192,9 +192,63 @@
   .npc-dialogue form,#librarian-topics{overflow:hidden;max-height:none}
   .npc-dialogue-copy > [hidden],.npc-dialogue form[hidden],
   #librarian-topics[hidden],.dialogue-page-next[hidden]{display:none!important}
-  .npc-dialogue .dialogue-page-next{align-self:flex-start;flex:0 0 auto}
+  .npc-dialogue .dialogue-page-next{align-self:center;flex:0 0 auto}
   #skeleton-topics,#librarian-topics{grid-template-columns:repeat(2,minmax(0,1fr))}
   #skeleton-topics button,#librarian-topics button{font-size:clamp(10px,1.3vw,12px);line-height:1.2}
+
+  /* Dialogue readability and choice hierarchy. */
+  .npc-dialogue-copy{
+    justify-content:center;
+    align-items:center;
+    padding:18px clamp(16px,2.4vw,30px) 14px;
+  }
+  .npc-dialogue h2{
+    width:100%;
+    text-align:center;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .npc-dialogue p{
+    width:min(100%,62ch);
+    text-align:center;
+    justify-content:center;
+    margin-inline:auto;
+  }
+  .npc-dialogue form,#librarian-topics,#skeleton-topics{
+    justify-content:center;
+    width:min(100%,680px);
+    margin-inline:auto;
+  }
+  .npc-dialogue button{
+    min-height:34px;
+    padding:7px 16px 7px 30px;
+    border:1px solid #c69a5e;
+    border-radius:2px;
+    background:linear-gradient(180deg,#57405a 0%,#30283f 100%);
+    color:#ffe8b0;
+    box-shadow:inset 0 0 0 1px #211b2e, inset 0 -3px #1c1728, 2px 2px #171323;
+    font-size:13px;
+    letter-spacing:.01em;
+    transition:background .12s ease, transform .12s ease, border-color .12s ease;
+  }
+  .npc-dialogue button::before{
+    left:11px;
+    width:9px;
+    height:9px;
+    background:#e4bd74;
+    filter:drop-shadow(0 0 3px #d59b4c);
+  }
+  .npc-dialogue button:hover,.npc-dialogue button:focus-visible{
+    transform:translateY(-1px);
+    background:linear-gradient(180deg,#765578 0%,#40304e 100%);
+    border-color:#f2d18a;
+    color:#fff4cf;
+  }
+  .npc-dialogue .dialogue-page-next{
+    align-self:center;
+    margin-top:2px;
+    padding-inline:22px;
+  }
 
   /* Shared controls used by the game UI. */
   button{all:unset;cursor:pointer;width:28px;height:28px;display:grid;place-items:center;background:var(--bg2);
