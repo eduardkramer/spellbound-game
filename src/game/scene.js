@@ -3910,13 +3910,27 @@ function typeDialogue(element, text, panel, onComplete) {
     const page = remaining.slice(0, Math.max(1, used)).trim();
     remaining = remaining.slice(Math.max(1, used)).trimStart();
     const last = !remaining;
-    next.hidden = last;
     next.onclick = () => {
-      dialogueTyping.get(element)?.();
-      showPage();
+      const typing = dialogueTyping.get(element);
+      if (typing) {
+        typing();
+        next.hidden = false;
+        next.focus();
+        return;
+      }
+      next.hidden = true;
+      if (remaining) {
+        showPage();
+        return;
+      }
+      next.remove();
+      element.hidden = true;
+      restore();
+      onComplete?.();
     };
-    typeDialoguePage(element, page, panel, last ? onComplete : undefined, () => {
-      if (last) { next.remove(); restore(); }
+    typeDialoguePage(element, page, panel, undefined, () => {
+      next.hidden = false;
+      next.focus();
     });
     currentStop = dialogueTyping.get(element);
   }
@@ -3927,6 +3941,7 @@ function typeDialoguePage(element, text, panel, onComplete, onFinish) {
   dialogueTyping.get(element)?.();
   const characters = Array.from(text);
   let timer, position = 0;
+  element.hidden = false;
   const stop = () => {
     clearTimeout(timer);
     element.textContent = text;
@@ -3949,9 +3964,9 @@ function typeDialoguePage(element, text, panel, onComplete, onFinish) {
       return;
     }
     element.textContent += characters[position++];
-    timer = setTimeout(tick, /[.!?]/.test(characters[position - 1]) ? 90 : 14);
+    timer = setTimeout(tick, /[.!?]/.test(characters[position - 1]) ? 150 : 24);
   };
-  timer = setTimeout(tick, 32);
+  timer = setTimeout(tick, 24);
 }
 
 function talkToSkeletonMage() {
