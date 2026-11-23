@@ -706,41 +706,50 @@ const libraryClockDepth = 2.5;
 
 function drawLibraryClock(g) {
   const a = libraryClockCenter / 2;
-  const walnut = woodC('#7f4836');
-  const molding = flat('#bd8256', '#60372c', '#87523b');
-  box(g, a - 5.5, 0, 25, 11.5, libraryClockDepth, 36, walnut);
-  box(g, a - 5.5, 0, 24, 11.5, libraryClockDepth, 3, molding);
-  for (let z = 61; z < 70; z += 2) {
-    const inset = Math.floor((z - 61) / 2) / 2;
-    box(g, a - 5.5 + inset, 0, z, 11.5 - inset * 2, libraryClockDepth, Math.min(2, 70 - z), walnut);
-  }
-  wallR(g, libraryClockDepth, libraryClockCenter - 11, libraryClockCenter + 12, 24, 70, (u, z) => {
+  const walnut = woodC('#75402f');
+  const molding = flat('#c18a58', '#5a3029', '#89513b');
+  // Brede voet en plint maken de klok vrijstaand in plaats van aan de wand.
+  box(g, a - 8, 0, 3, 16, 6, 5, molding);
+  box(g, a - 7, 0, 8, 14, 5, 8, walnut);
+  box(g, a - 6, 0, 16, 12, 4, 45, walnut);
+  box(g, a - 7, 0, 60, 14, 5, 5, molding);
+  // De kroon loopt trapsgewijs toe en krijgt een klein decoratief schild.
+  box(g, a - 8, 0, 65, 16, 6, 3, molding);
+  box(g, a - 6.5, 0, 68, 13, 5, 4, walnut);
+  box(g, a - 4, 0, 72, 8, 4, 3, molding);
+  wallR(g, libraryClockDepth, libraryClockCenter - 16, libraryClockCenter + 16, 3, 75, (u, z) => {
     const x = u - libraryClockCenter, d = Math.abs(x);
-    if (z >= 61 && d > 11 - Math.floor((z - 61) / 2)) return null;
-    if (d >= 10 || z === 24 || z === 69) return '#3b262c';
-    if (z === 26 || z === 62 || (d === 9 && z > 28 && z < 60)) return x <= 0 ? '#d18b62' : '#a36348';
-    if (z === 27 || z === 63) return '#603733';
-    if (z < 29 || z >= 61 || z === 43) return z % 3 === 0 ? '#b26848' : '#8f4938';
-    if (z < 43 && d < 7) {
-      if (d === 6 || z === 29 || z === 42) return '#a4794d';
-      if (x === -5 && z > 33) return '#695563';
-      return z < 32 ? '#291f29' : '#342a34';
+    if (z < 8) return d >= 7 ? '#3b2529' : x < 0 ? '#b8784e' : '#75402f';
+    if (z === 8 || z === 16 || z === 60 || z === 65 || z === 69) return molding;
+    if (d >= 7) return x < 0 ? '#b9784f' : '#4d2b2c';
+    if (z >= 18 && z < 45 && d < 5.5) {
+      if (d === 5 || z === 18 || z === 44) return '#c08a58';
+      if (d === 4 && (z === 19 || z === 43)) return '#7e523b';
+      if (x === -4 && z > 21 && z < 42) return '#8a6c70';
+      if (x === 3 && z > 20 && z < 42) return '#4b3645';
+      if (d === 0 && z === 22) return '#d7aa62';
+      if (d <= 1 && z >= 23 && z <= 39) return '#b58a55';
+      return z < 31 ? '#171522' : '#29202d';
     }
-    const r = Math.hypot(x, z - 52);
+    const r = Math.hypot(x, z - 53);
     if (r <= 8) {
-      if (r > 7) return '#a3774b';
-      const dy = Math.abs(z - 52);
-      if ((d === 0 && dy === 6) || (dy === 0 && d === 6)) return '#654835';
+      if (r > 7) return '#d0a56b';
+      const dy = Math.abs(z - 53);
+      if ((d === 0 && dy === 6) || (dy === 0 && d === 6)) return '#5f4033';
+      if ((d === 0 && dy === 4) || (dy === 0 && d === 4)) return '#815638';
       if (d >= 2 && dy >= 2 && Math.abs(r - 6) < .38) return '#98775b';
-      return r > 5.9 ? '#c6a47b' : '#e4cba0';
+      // Vier duidelijke uurmarkeringen houden de wijzerplaat leesbaar op pixelgrootte.
+      if ((d === 0 && dy === 5) || (dy === 0 && d === 5)) return '#6b4937';
+      if ((d === 3 && dy === 4) || (d === 4 && dy === 3)) return '#9a7655';
+      return r > 5.9 ? '#c7a77f' : '#ead4a7';
     }
-    if (d === 8) return x < 0 ? '#bc7850' : '#613634';
-    return hash(u, Math.floor(z / 5)) > .7 ? '#a96346' : x < 0 ? '#97583e' : '#774033';
+    if (z > 70 && d > 4) return '#a96a49';
+    return hash(u, Math.floor(z / 4)) > .7 ? '#a96346' : x < 0 ? '#97583e' : '#774033';
   });
 }
 
 function animateLibraryClock(t) {
-  const [faceX, faceY] = P(libraryClockCenter / 2, libraryClockDepth, 52);
+  const [faceX, faceY] = P(libraryClockCenter / 2, libraryClockDepth, 53);
   const angle = t / 45 - .85;
   line(ctx, faceX, faceY, faceX + Math.sin(angle) * 5, faceY - Math.cos(angle) * 5, '#674632');
   line(ctx, faceX, faceY, faceX + 3, faceY + 2, '#493237');
